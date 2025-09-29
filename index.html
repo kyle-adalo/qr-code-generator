@@ -16,19 +16,54 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             padding: 20px;
         }
 
         .container {
             background: white;
-            padding: 40px;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 500px;
+            max-width: 1400px;
             width: 100%;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            min-height: 600px;
+            max-height: 90vh;
+            overflow: hidden;
+        }
+
+        .options-panel {
+            padding: 40px;
+            overflow-y: auto;
+            border-right: 2px solid #f0f0f0;
+            max-height: 90vh;
+        }
+
+        .preview-panel {
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #f9f9f9;
+            border-radius: 0 20px 20px 0;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+                max-height: none;
+            }
+            
+            .options-panel {
+                border-right: none;
+                border-bottom: 2px solid #f0f0f0;
+            }
+            
+            .preview-panel {
+                border-radius: 0 0 20px 20px;
+            }
         }
 
         h1 {
@@ -57,7 +92,7 @@
             font-weight: 600;
         }
 
-        input[type="text"], input[type="url"], input[type="file"] {
+        input[type="text"], input[type="url"], input[type="file"], select {
             width: 100%;
             padding: 12px;
             border: 2px solid #e0e0e0;
@@ -66,7 +101,7 @@
             transition: border-color 0.3s, box-shadow 0.3s;
         }
 
-        input[type="text"]:focus, input[type="url"]:focus {
+        input[type="text"]:focus, input[type="url"]:focus, select:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
@@ -75,6 +110,11 @@
         input[type="file"] {
             padding: 10px;
             cursor: pointer;
+        }
+
+        select {
+            cursor: pointer;
+            background: white;
         }
 
         .logo-input-wrapper {
@@ -171,20 +211,32 @@
             cursor: pointer;
         }
 
+        .badge-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
         #qrcode-wrapper {
-            margin-top: 30px;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
-            background: #f9f9f9;
+            background: white;
             border-radius: 12px;
-            min-height: 280px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
         }
 
         #qrcode-container {
             text-align: center;
             position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         #qrcode {
@@ -218,6 +270,18 @@
             border-radius: 4px;
         }
 
+        .badge-preview {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .badge-preview img {
+            height: 40px;
+            display: none;
+        }
+
         #qr-title {
             font-size: 18px;
             font-weight: 600;
@@ -235,17 +299,18 @@
 
         .download-btn {
             width: 100%;
-            margin-top: 15px;
+            max-width: 600px;
+            margin-top: 20px;
             padding: 14px;
             background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
             color: white;
             border: none;
             border-radius: 8px;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
-            display: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .download-btn:hover {
@@ -260,61 +325,114 @@
 </head>
 <body>
     <div class="container">
-        <h1>QR Code Generator</h1>
-        <div class="subtitle">✨ Updates in real-time as you type</div>
-        
-        <div class="input-group">
-            <label for="text">Enter Text or URL:</label>
-            <input type="text" id="text" placeholder="https://example.com or any text">
-        </div>
-
-        <div class="input-group">
-            <label for="title">Title (optional):</label>
-            <input type="text" id="title" placeholder="Add a title below the QR code">
-        </div>
-
-        <div class="input-group">
-            <label for="logo">Center Logo (optional):</label>
-            <div class="logo-input-wrapper">
-                <input type="file" id="logo" accept="image/*">
-                <button id="removeLogo" class="remove-logo-btn" onclick="removeLogo()" style="display: none;">Remove</button>
+        <div class="options-panel">
+            <h1>QR Code Generator</h1>
+            <div class="subtitle"></div>
+            
+            <div class="input-group">
+                <label for="text">Enter Text or URL:</label>
+                <input type="text" id="text" placeholder="https://example.com or any text">
             </div>
-        </div>
 
-        <div class="size-group">
-            <div>
-                <label for="size">Size: <span class="size-value" id="sizeValue">256px</span></label>
-                <input type="range" id="size" min="128" max="400" value="256">
+            <div class="input-group">
+                <label for="title">Title (optional):</label>
+                <input type="text" id="title" placeholder="Add a title below the QR code">
             </div>
-        </div>
 
-        <div class="color-group">
-            <div>
-                <label for="colorDark">QR Color:</label>
-                <input type="color" id="colorDark" value="#000000">
-            </div>
-            <div>
-                <label for="colorLight">Background:</label>
-                <input type="color" id="colorLight" value="#ffffff">
-            </div>
-        </div>
-
-        <button class="download-btn" id="downloadBtn" onclick="downloadQR()">Download QR Code</button>
-
-        <div id="qrcode-wrapper">
-            <div id="qrcode-container">
-                <div id="qrcode">
-                    <div class="placeholder">Start typing to generate your QR code...</div>
+            <div class="input-group">
+                <label for="logo">Center Logo (optional):</label>
+                <div class="logo-input-wrapper">
+                    <input type="file" id="logo" accept="image/*">
+                    <button id="removeLogo" class="remove-logo-btn" onclick="removeLogo()" style="display: none;">Remove</button>
                 </div>
-                <div id="qr-logo-overlay">
-                    <img id="qr-logo" src="" alt="Logo">
-                </div>
-                <div id="qr-title"></div>
             </div>
+
+            <div class="input-group">
+                <label>App Store Badges (optional):</label>
+                <div class="badge-options">
+                    <div>
+                        <label for="appleBadge" style="font-weight: normal; display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" id="appleBadge" onchange="updateBadges()">
+                            Apple App Store
+                        </label>
+                    </div>
+                    <div>
+                        <label for="googleBadge" style="font-weight: normal; display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" id="googleBadge" onchange="updateBadges()">
+                            Google Play
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-group" id="badgePositionGroup" style="display: none;">
+                <label for="badgePosition">Badge Position:</label>
+                <select id="badgePosition" onchange="updateBadges()">
+                    <option value="bottom">Bottom</option>
+                    <option value="top">Top</option>
+                    <option value="left">Left</option>
+                    <option value="right">Right</option>
+                </select>
+            </div>
+
+            <div class="size-group">
+                <div>
+                    <label for="size">Size: <span class="size-value" id="sizeValue">256px</span></label>
+                    <input type="range" id="size" min="128" max="400" value="256">
+                </div>
+            </div>
+
+            <div class="color-group">
+                <div>
+                    <label for="colorDark">QR Color:</label>
+                    <input type="color" id="colorDark" value="#000000">
+                </div>
+                <div>
+                    <label for="colorLight">Background:</label>
+                    <input type="color" id="colorLight" value="#ffffff">
+                </div>
+            </div>
+        </div>
+
+        <div class="preview-panel">
+            <div id="qrcode-wrapper">
+                <div id="qrcode-container">
+                    <div class="badge-preview" id="badgeTop">
+                        <img id="appleBadgeTop" alt="App Store">
+                        <img id="googleBadgeTop" alt="Google Play">
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="badge-preview" id="badgeLeft" style="flex-direction: column; margin: 0;">
+                            <img id="appleBadgeLeft" alt="App Store">
+                            <img id="googleBadgeLeft" alt="Google Play">
+                        </div>
+                        <div id="qrcode">
+                            <div class="placeholder">Start typing to generate your QR code...</div>
+                        </div>
+                        <div class="badge-preview" id="badgeRight" style="flex-direction: column; margin: 0;">
+                            <img id="appleBadgeRight" alt="App Store">
+                            <img id="googleBadgeRight" alt="Google Play">
+                        </div>
+                    </div>
+                    <div id="qr-logo-overlay">
+                        <img id="qr-logo" src="" alt="Logo">
+                    </div>
+                    <div id="qr-title"></div>
+                    <div class="badge-preview" id="badgeBottom">
+                        <img id="appleBadgeBottom" alt="App Store">
+                        <img id="googleBadgeBottom" alt="Google Play">
+                    </div>
+                </div>
+            </div>
+            <button class="download-btn" id="downloadBtn" onclick="downloadQR()">Download QR Code</button>
         </div>
     </div>
 
     <script>
+        // Badge URLs
+        const APPLE_BADGE_URL = 'https://adalo-uploads.imgix.net/eb996f00a1a771dd5537847282f5f401512295e911b978fd83f1a510a64528ee.png';
+        const GOOGLE_BADGE_URL = 'https://adalo-uploads.imgix.net/faa29e49e7d6df027fde006b0e7ba588bc55028f44a81a699f8e2c53dd26b2f7.png';
+        
         let qrcode = null;
         let updateTimeout = null;
         let logoImage = null;
@@ -332,6 +450,10 @@
         const qrLogo = document.getElementById('qr-logo');
         const downloadBtn = document.getElementById('downloadBtn');
         const removeLogoBtn = document.getElementById('removeLogo');
+        const appleBadgeCheck = document.getElementById('appleBadge');
+        const googleBadgeCheck = document.getElementById('googleBadge');
+        const badgePositionSelect = document.getElementById('badgePosition');
+        const badgePositionGroup = document.getElementById('badgePositionGroup');
 
         function generateQR() {
             const text = textInput.value.trim();
@@ -340,18 +462,15 @@
             const dark = colorDark.value;
             const light = colorLight.value;
 
-            // Clear previous QR code
             qrcodeContainer.innerHTML = '';
 
             if (!text) {
                 qrcodeContainer.innerHTML = '<div class="placeholder">Start typing to generate your QR code...</div>';
-                downloadBtn.style.display = 'none';
                 qrTitle.textContent = '';
                 qrLogoOverlay.style.display = 'none';
                 return;
             }
 
-            // Generate new QR code
             qrcode = new QRCode(qrcodeContainer, {
                 text: text,
                 width: size,
@@ -361,15 +480,12 @@
                 correctLevel: QRCode.CorrectLevel.H
             });
 
-            // Update title
             qrTitle.textContent = title;
 
-            // Show logo overlay if logo exists
             if (logoImage) {
                 qrLogoOverlay.style.display = 'block';
             }
 
-            // Show download button
             downloadBtn.style.display = 'block';
         }
 
@@ -402,133 +518,257 @@
             removeLogoBtn.style.display = 'none';
         }
 
+        function updateBadges() {
+            const showApple = appleBadgeCheck.checked;
+            const showGoogle = googleBadgeCheck.checked;
+            const position = badgePositionSelect.value;
+
+            // Show position selector if any badge is checked
+            badgePositionGroup.style.display = (showApple || showGoogle) ? 'block' : 'none';
+
+            // Hide all badges and set their sources
+            document.querySelectorAll('.badge-preview img').forEach(img => {
+                img.style.display = 'none';
+                if (img.id.includes('apple')) {
+                    img.src = APPLE_BADGE_URL;
+                } else if (img.id.includes('google')) {
+                    img.src = GOOGLE_BADGE_URL;
+                }
+            });
+
+            // Show badges in selected position
+            if (showApple) {
+                document.getElementById('appleBadge' + position.charAt(0).toUpperCase() + position.slice(1)).style.display = 'block';
+            }
+            if (showGoogle) {
+                document.getElementById('googleBadge' + position.charAt(0).toUpperCase() + position.slice(1)).style.display = 'block';
+            }
+        }
+
         function downloadQR() {
             const canvas = document.querySelector('#qrcode canvas');
             if (!canvas) return;
 
             const hasTitle = titleInput.value.trim();
             const hasLogo = logoImage;
+            const showApple = appleBadgeCheck.checked;
+            const showGoogle = googleBadgeCheck.checked;
+            const badgePosition = badgePositionSelect.value;
 
-            // Create a high-resolution temporary canvas
-            const tempCanvas = document.createElement('canvas');
-            const ctx = tempCanvas.getContext('2d');
-            
-            // Enable high-quality image rendering
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
+            // Pre-load badge images
+            const badgeImages = {};
+            let badgesLoaded = 0;
+            const totalBadgesToLoad = (showApple ? 1 : 0) + (showGoogle ? 1 : 0);
 
-            const qrSize = parseInt(sizeInput.value);
-            const padding = 40;
-            const titleHeight = hasTitle ? 60 : 0;
-            
-            // Use higher resolution for better quality
-            const scale = 2;
-            tempCanvas.width = (qrSize + (padding * 2)) * scale;
-            tempCanvas.height = (qrSize + titleHeight + (padding * 2)) * scale;
-            
-            // Scale the context
-            ctx.scale(scale, scale);
+            function startDrawing() {
+                const tempCanvas = document.createElement('canvas');
+                const ctx = tempCanvas.getContext('2d');
+                
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
 
-            // Fill background
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+                const qrSize = parseInt(sizeInput.value);
+                const padding = 40;
+                const titleHeight = hasTitle ? 60 : 0;
+                const badgeHeight = (showApple || showGoogle) ? 70 : 0;
+                const badgeWidth = 150;
+                
+                const scale = 2;
+                let canvasWidth = qrSize + (padding * 2);
+                let canvasHeight = qrSize + titleHeight + (padding * 2);
 
-            let yOffset = padding;
+                // Adjust dimensions based on badge position
+                if (badgePosition === 'top' || badgePosition === 'bottom') {
+                    canvasHeight += badgeHeight;
+                } else if (badgePosition === 'left' || badgePosition === 'right') {
+                    canvasWidth += badgeWidth + 20;
+                }
 
-            // Draw QR code
-            ctx.drawImage(canvas, padding, yOffset, qrSize, qrSize);
+                tempCanvas.width = canvasWidth * scale;
+                tempCanvas.height = canvasHeight * scale;
+                
+                ctx.scale(scale, scale);
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-            // Draw logo in center if exists
-            if (hasLogo) {
-                const img = new Image();
-                img.onload = function() {
-                    const logoSize = 70;
-                    const logoPadding = 10;
-                    const logoBoxSize = logoSize + (logoPadding * 2);
+                let yOffset = padding;
+                let xOffset = padding;
+
+                // Adjust offsets based on badge position
+                if (badgePosition === 'top') yOffset += badgeHeight;
+                if (badgePosition === 'left') xOffset += badgeWidth + 20;
+
+                // Draw badges based on position
+                if (badgePosition === 'top' && (showApple || showGoogle)) {
+                    let currentX = (canvasWidth - (showApple && showGoogle ? 265 : showApple ? 120 : 135)) / 2;
+                    const badgeY = 10;
+
+                    if (showApple && badgeImages.apple) {
+                        ctx.drawImage(badgeImages.apple, currentX, badgeY, 120, 40);
+                        currentX += 145;
+                    }
                     
-                    const centerX = (tempCanvas.width / scale) / 2;
-                    const centerY = yOffset + (qrSize / 2);
+                    if (showGoogle && badgeImages.google) {
+                        ctx.drawImage(badgeImages.google, currentX, badgeY, 135, 40);
+                    }
+                }
 
-                    // Draw white background for logo with rounded corners
-                    ctx.fillStyle = '#ffffff';
-                    ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
-                    ctx.shadowBlur = 8;
-                    ctx.shadowOffsetX = 0;
-                    ctx.shadowOffsetY = 2;
-                    
-                    const radius = 8;
-                    const boxX = centerX - (logoBoxSize / 2);
-                    const boxY = centerY - (logoBoxSize / 2);
-                    
-                    ctx.beginPath();
-                    ctx.roundRect(boxX, boxY, logoBoxSize, logoBoxSize, radius);
-                    ctx.fill();
-                    
-                    // Reset shadow
-                    ctx.shadowColor = 'transparent';
-                    ctx.shadowBlur = 0;
-                    ctx.shadowOffsetX = 0;
-                    ctx.shadowOffsetY = 0;
+                if (badgePosition === 'left' && (showApple || showGoogle)) {
+                    let currentY = yOffset + (qrSize - (showApple && showGoogle ? 90 : 40)) / 2;
+                    const badgeX = 10;
 
-                    // Draw logo with high quality
-                    ctx.drawImage(
-                        img, 
-                        centerX - (logoSize / 2), 
-                        centerY - (logoSize / 2), 
-                        logoSize, 
-                        logoSize
-                    );
+                    if (showApple && badgeImages.apple) {
+                        ctx.drawImage(badgeImages.apple, badgeX, currentY, 120, 40);
+                        currentY += 50;
+                    }
+                    
+                    if (showGoogle && badgeImages.google) {
+                        ctx.drawImage(badgeImages.google, badgeX, currentY, 135, 40);
+                    }
+                }
 
-                    // Draw title if exists
+                if (badgePosition === 'right' && (showApple || showGoogle)) {
+                    let currentY = yOffset + (qrSize - (showApple && showGoogle ? 90 : 40)) / 2;
+                    const badgeX = xOffset + qrSize + 20;
+
+                    if (showApple && badgeImages.apple) {
+                        ctx.drawImage(badgeImages.apple, badgeX, currentY, 120, 40);
+                        currentY += 50;
+                    }
+                    
+                    if (showGoogle && badgeImages.google) {
+                        ctx.drawImage(badgeImages.google, badgeX, currentY, 135, 40);
+                    }
+                }
+
+                // Draw QR code
+                ctx.drawImage(canvas, xOffset, yOffset, qrSize, qrSize);
+
+                // Draw logo if exists
+                if (hasLogo) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const logoSize = 70;
+                        const logoPadding = 10;
+                        const logoBoxSize = logoSize + (logoPadding * 2);
+                        
+                        const centerX = xOffset + (qrSize / 2);
+                        const centerY = yOffset + (qrSize / 2);
+
+                        ctx.fillStyle = '#ffffff';
+                        ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+                        ctx.shadowBlur = 8;
+                        ctx.shadowOffsetX = 0;
+                        ctx.shadowOffsetY = 2;
+                        
+                        const radius = 8;
+                        const boxX = centerX - (logoBoxSize / 2);
+                        const boxY = centerY - (logoBoxSize / 2);
+                        
+                        ctx.beginPath();
+                        ctx.roundRect(boxX, boxY, logoBoxSize, logoBoxSize, radius);
+                        ctx.fill();
+                        
+                        ctx.shadowColor = 'transparent';
+                        ctx.shadowBlur = 0;
+                        ctx.shadowOffsetX = 0;
+                        ctx.shadowOffsetY = 0;
+
+                        ctx.drawImage(img, centerX - (logoSize / 2), centerY - (logoSize / 2), logoSize, logoSize);
+
+                        finishDrawing();
+                    };
+                    img.src = logoImage;
+                } else {
+                    finishDrawing();
+                }
+
+                function finishDrawing() {
+                    // Draw title
                     if (hasTitle) {
                         ctx.fillStyle = '#333333';
                         ctx.font = 'bold 24px "Segoe UI", sans-serif';
                         ctx.textAlign = 'center';
-                        ctx.fillText(titleInput.value, (tempCanvas.width / scale) / 2, yOffset + qrSize + 40);
+                        ctx.fillText(titleInput.value, canvasWidth / 2, yOffset + qrSize + 40);
                     }
 
-                    // Download with high quality
+                    // Draw bottom badges
+                    if (badgePosition === 'bottom' && (showApple || showGoogle)) {
+                        let currentX = (canvasWidth - (showApple && showGoogle ? 265 : showApple ? 120 : 135)) / 2;
+                        const badgeY = yOffset + qrSize + titleHeight + 10;
+
+                        if (showApple && badgeImages.apple) {
+                            ctx.drawImage(badgeImages.apple, currentX, badgeY, 120, 40);
+                            currentX += 145;
+                        }
+                        
+                        if (showGoogle && badgeImages.google) {
+                            ctx.drawImage(badgeImages.google, currentX, badgeY, 135, 40);
+                        }
+                    }
+
+                    // Download
                     const url = tempCanvas.toDataURL('image/png', 1.0);
                     const link = document.createElement('a');
                     link.download = 'qrcode.png';
                     link.href = url;
                     link.click();
-                };
-                img.src = logoImage;
-            } else {
-                // Draw title if exists (no logo case)
-                if (hasTitle) {
-                    ctx.fillStyle = '#333333';
-                    ctx.font = 'bold 24px "Segoe UI", sans-serif';
-                    ctx.textAlign = 'center';
-                    ctx.fillText(titleInput.value, (tempCanvas.width / scale) / 2, yOffset + qrSize + 40);
                 }
+            }
 
-                // Download
-                const url = tempCanvas.toDataURL('image/png', 1.0);
-                const link = document.createElement('a');
-                link.download = 'qrcode.png';
-                link.href = url;
-                link.click();
+            // Load badges first
+            if (totalBadgesToLoad === 0) {
+                startDrawing();
+                return;
+            }
+
+            function checkAllBadgesLoaded() {
+                badgesLoaded++;
+                if (badgesLoaded === totalBadgesToLoad) {
+                    startDrawing();
+                }
+            }
+
+            if (showApple) {
+                const appleImg = new Image();
+                appleImg.crossOrigin = 'anonymous';
+                appleImg.onload = function() {
+                    badgeImages.apple = appleImg;
+                    checkAllBadgesLoaded();
+                };
+                appleImg.onerror = function() {
+                    console.error('Failed to load Apple badge');
+                    checkAllBadgesLoaded();
+                };
+                appleImg.src = APPLE_BADGE_URL;
+            }
+
+            if (showGoogle) {
+                const googleImg = new Image();
+                googleImg.crossOrigin = 'anonymous';
+                googleImg.onload = function() {
+                    badgeImages.google = googleImg;
+                    checkAllBadgesLoaded();
+                };
+                googleImg.onerror = function() {
+                    console.error('Failed to load Google badge');
+                    checkAllBadgesLoaded();
+                };
+                googleImg.src = GOOGLE_BADGE_URL;
             }
         }
 
-        // Update size value display
         sizeInput.addEventListener('input', function() {
             sizeValue.textContent = this.value + 'px';
             generateQR();
         });
 
-        // Real-time updates with debouncing for text input
         textInput.addEventListener('input', debouncedGenerate);
         titleInput.addEventListener('input', function() {
             qrTitle.textContent = this.value;
         });
 
-        // Logo upload handler
         logoInput.addEventListener('change', handleLogoUpload);
-
-        // Immediate updates for color changes
         colorDark.addEventListener('input', generateQR);
         colorLight.addEventListener('input', generateQR);
     </script>
